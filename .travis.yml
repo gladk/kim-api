@@ -10,10 +10,13 @@ services:
  - docker
 
 env:
+  global:
+    - secure: "knFkRceVfuvlc7j9u5OUDHCMlPu531f/HR6TV4zboPc8UtbJ/Hiz7ooRO2VZheoMhdWJjaWQLYEJ1CGLyszziCbETeBj6cbNmzXVcgE2p2JWI76L7RLIMZrAjDeg0X+p9l7HcFvEBMIz87jqirwuyZZVBdYPxOL8ECiPJIyS2Ec5cwTyj4TBYomNfrL8lksj10ui6HOPQ63jsF8B68ZzsmPf2CSZPZgLqDZAyBxc+jGdOB7TF6O5dJALWzMW0AdWdpsOxRkBCZHQdUEqeYMBF0Ypq1Xj/Tol5Qsh0UMYTHZ4E72XwSLL+wyUKpCR96iWqI8jYnYY+/h/eNcVKABPMX2nE0xaqhNPbdEVJPMaayVdxJMzDWxt2eIXTxLRPjcoqCiLGF9G860dxfvTwz7RSQZtnJmTClO/5jHdoDltof372E0MJOh7W2lR22jNDAHT6tmPevZGyTsMN+vKJ/u46P1v5DbdeRAgdjikVYCqqaqUvWzqj5Urs4gZI/dyPyEAZy0mwOgKdpEQhcNCDquq03jCU/V9SlqLgkyZPcTA9PVFtFTgZhEm6rA+hK/vtqo6BZxewyoFGDgVXOylA4f90kPZqOgO83ufeYi+s8RGLxAxLddcsxh4wtGhgnEwQJlznjxfWCKiirRZ4ZXSikoa28R/RbmK27syhYFbjs27D3g="
   matrix:
     - DISTRO=fedora DOCKERHUB=true
 
 before_script:
+  - test $TRAVIS_BRANCH != coverity_scan -o ${TRAVIS_JOB_NUMBER##*.} = 2 || exit 0
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       brew update &> /dev/null &&
       rm /usr/local/include/c++ &&
@@ -30,6 +33,7 @@ before_script:
     fi
 
 script:
+  - test $TRAVIS_BRANCH != coverity_scan || exit 0
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       mkdir build && cd build && cmake -DBUILD_MODULES=ON -DENABLE_COVERAGE=ON .. && make &&
       make test && bash <(curl -s https://codecov.io/bash) -x gcov-6 &&
@@ -58,3 +62,16 @@ after_success:
 
 cache:
   - ccache
+
+before_install:
+  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+
+addons:
+  coverity_scan:
+    project:
+      name: "openkim/kim-api"
+      description: "OpenKIM is an online framework for making molecular simulations reliable, reproducible, and portable. Computer implementations of interatomic models are archived in OpenKIM, verified for coding integrity, and tested by computing their predictions for a variety of material properties. Models conforming to the KIM application programming interface (API) work seamlessly with major simulation codes that have adopted the KIM API standard."
+    notification_email: relliott@umn.edu
+    build_command_prepend: "cmake -DBUILD_MODULES=ON"
+    build_command: "make"
+    branch_pattern: coverity_scan
