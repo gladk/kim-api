@@ -33,7 +33,7 @@ before_script:
     fi
 
 script:
-  - if [[ ! $COVERITY ]]; then
+  - if [[ "$COVERITY" == false ]]; then
       if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         mkdir build && cd build && cmake -DBUILD_MODULES=ON -DENABLE_COVERAGE=ON .. && make &&
         make test && bash <(curl -s https://codecov.io/bash) -x gcov-6 &&
@@ -56,7 +56,7 @@ script:
     fi
 
 after_success:
-  - if [[ ${DOCKERHUB} && ${DOCKER_USERNAME} && ${DOCKER_PASSWORD} && ${TRAVIS_BRANCH} == cmake && ${TRAVIS_PULL_REQUEST} == false && ${TRAVIS_OS_NAME} = "linux" ]]; then
+  - if [[ "${COVERITY}" == false && ${DOCKERHUB} && ${DOCKER_USERNAME} && ${DOCKER_PASSWORD} && ${TRAVIS_BRANCH} == cmake && ${TRAVIS_PULL_REQUEST} == false && ${TRAVIS_OS_NAME} = "linux" ]]; then
       docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
       docker push "${TRAVIS_REPO_SLUG}:${DISTRO}";
     fi
