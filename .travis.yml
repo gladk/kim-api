@@ -31,9 +31,6 @@ before_script:
        mv -v ${TRAVIS_REPO_SLUG} $HOME/docker &&
        cp -r $HOME/.ccache ${HOME}/docker/ccache;
     fi
-  - if [[ $COVERITY ]]; then
-      apt-get install make cmake git g++ gfortran ccache wget vim-common
-    fi
 
 script:
   - if [[ ! $COVERITY ]]; then
@@ -55,7 +52,7 @@ script:
         rm -rf $HOME/.ccache &&
         CON=$(docker run -d ${TRAVIS_REPO_SLUG}:${DISTRO} /bin/bash) &&
         docker cp ${CON}:/home/kim/.ccache ${HOME}/;
-      fi
+      fi;
     fi
 
 after_success:
@@ -68,6 +65,16 @@ cache:
   - ccache
 
 addons:
+  apt:
+    packages:
+      - make
+      - cmake
+      - git
+      - g++
+      - gfortran
+      - ccache
+      - wget
+      - vim-common
   coverity_scan:
     project:
       name: "openkim/kim-api"
