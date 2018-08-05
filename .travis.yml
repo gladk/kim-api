@@ -17,7 +17,7 @@ env:
     - COVERITY=true
 
 before_script:
-  - if [ "${COVERITY_SCAN_BRANCH}" != 1 && "${COVERITY}" == false ]; then
+  - if [[ "${COVERITY_SCAN_BRANCH}" != 1 && "${COVERITY}" == false ]]; then
         if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
           brew update &> /dev/null &&
           rm /usr/local/include/c++ &&
